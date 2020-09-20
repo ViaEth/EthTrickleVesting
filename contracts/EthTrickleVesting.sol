@@ -4,26 +4,26 @@
  * similar to a vesting scheme. Optionally revocable by the owner.
  */
  
-duration\\
-Every duration the contract releases a trickle percentage of the vested eth amount.
+//duration
+//Every duration the contract releases a trickle percentage of the vested eth amount.
 
-trickle percentage\\
-The percentage used to calculate release and reinvest amounts.
+//trickle percentage
+//The percentage used to calculate release and reinvest amounts.
 
-claim function\\
-this function is used to claim all of the released eth.
+//claim function
+//this function is used to claim all of the released eth.
 
-release function\\
-After a specific duration a percentage of the eth vesting pool is move to the released amount
+//release function
+//After a specific duration a percentage of the eth vesting pool is move to the released amount
 
-reinvest function\\
-After a specific duration a percentage of the released amount is moved back to the eth vesting pool.
+//reinvest function
+//After a specific duration a percentage of the released amount is moved back to the eth vesting pool.
 
-displayReleased function\\
-outputs the available released eth available using the claim function.
+//displayReleased function
+//outputs the available released eth available using the claim function.
 
-displayTotal function\\
-outputs the total amount of eth vested in the contract.
+//displayTotal function
+//outputs the total amount of eth vested in the contract.
 
 contract EthTrickleVesting {
     /**
