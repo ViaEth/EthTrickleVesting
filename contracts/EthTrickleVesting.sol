@@ -9,9 +9,11 @@ pragma solidity >=0.4.22 <0.7.0;
 contract EthTrickleVesting {
 	/**
 	* @dev Set owner
-	* @param owner the address that can claim the eth and revoke the contract
+	* @param owner the address that can claim the eth.
 	*/
-	address private owner;
+	address payable private owner;
+	
+	address wallet;
 	
 	// event for EVM logging
     event OwnerSet(address indexed oldOwner, address indexed newOwner);
@@ -20,7 +22,7 @@ contract EthTrickleVesting {
      * @dev Change owner
      * @param newOwner address of new owner
      */
-    function changeOwner(address newOwner) public isOwner {
+    function changeOwner(address payable newOwner) public isOwner {
         emit OwnerSet(owner, newOwner);
         owner = newOwner;
     }
@@ -91,25 +93,25 @@ contract EthTrickleVesting {
 	}	
 	
 	//claim function
-	//this function is used to claim all of the released eth.
-	function claim() public payable isOwner {
-        owner.send(msg.value);
+	//this function is used to claim all of the released eth which moves it from the contract to the owners address.
+	function claim() public isOwner {
+        //owner.send(msg.value);
     }
     
     //lock function
-    //this fucntion is payable and locks the eth until its relased
+    //this fucntion is payable and locks the eth until its released
     function lock() public payable {
-        
+          
     }
 	
 	//release function
 	//After a specific duration a percentage of the eth vesting pool is move to the released amount
 	//If less then 1/100th of 1 eth then its all released, time based.
-	//function release() {
-	//}
+	function release() internal {
+	}
 
 	//reinvest function
 	//After a specific duration a percentage of the released amount is moved back to the eth vesting pool, time based.
-	//function reinvest() {
-	//}
+	function reinvest() internal {
+	}
 }
