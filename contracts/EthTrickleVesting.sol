@@ -13,8 +13,6 @@ contract EthTrickleVesting {
 	*/
 	address payable private owner;
 	
-	address wallet;
-	
 	// event for EVM logging
     event OwnerSet(address indexed oldOwner, address indexed newOwner);
     
@@ -89,19 +87,23 @@ contract EthTrickleVesting {
 	//displayTotal
 	//Outputs the total (Released+Locked) amount of eth in the contract.
 	function displayTotal() external view returns (uint256) {
-	    return totalAmount;
-	}	
+	    return address(this).balance;
+	}
 	
 	//claim function
 	//this function is used to claim all of the released eth which moves it from the contract to the owners address.
 	function claim() public isOwner {
-        //owner.send(msg.value);
+        //require(now >= unlockDate);
+        //Updated locked, released, and total amounts.
+        msg.sender.transfer(address(this).balance);
     }
     
     //lock function
-    //this fucntion is payable and locks the eth until its released
-    function lock() public payable {
-          
+    //this fucntion is payable and locks the eth until its released.
+    //double check external vs internal.
+    function lock() external payable {
+        lockedAmount = lockedAmount + msg.value;
+        totalAmount = totalAmount + msg.value;
     }
 	
 	//release function
