@@ -6,44 +6,8 @@ pragma solidity >=0.4.22 <0.7.0;
  */
 
 contract EthTrickleVesting {
-	/**
-	* @dev Set owner
-	* @param owner the address that can claim the eth.
-	*/
-	address payable private owner;
-	
-	// event for EVM logging
-	event OwnerSet(address indexed oldOwner, address indexed newOwner);
     
-	/**
-	* @dev Change owner
-	* @param newOwner address of new owner
-	*/
-	function changeOwner(address payable newOwner) public isOwner {
-		emit OwnerSet(owner, newOwner);
-        	owner = newOwner;
-	}
-    	
-	/**
-	* @dev Return owner address 
-	* @return address of owner
-	*/
-	function getOwner() external view returns (address) {
-		return owner;
-	}
-    
- 	// modifier to check if caller is owner
-	modifier isOwner() {
-		// If the first argument of 'require' evaluates to 'false', execution terminates and all
-		// changes to the state and to Ether balances are reverted.
-		// This used to consume all gas in old EVM versions, but not anymore.
-		// It is often a good idea to use 'require' to check if functions are called correctly.
-		// As a second argument, you can also provide an explanation about what went wrong.
-		require(msg.sender == owner, "Caller is not owner");
-		_;
-	}
-
-	//duration
+    //duration
 	//Every duration the contract releases a trickle percentage of the vested eth amount. In days.
 	uint256 duration = 30;
 
@@ -68,6 +32,47 @@ contract EthTrickleVesting {
  	uint256 totalAmount = lockedAmount + releasedAmount;
     
 	/**
+	* @dev Set owner
+	* @param owner the address that can claim the eth.
+	*/
+	address payable private owner;
+	
+	/** 
+	 * @dev Event for EVM logging
+	 */
+	event OwnerSet(address indexed oldOwner, address indexed newOwner);
+    
+	/**
+	* @dev Change owner
+	* @param newOwner address of new owner
+	*/
+	function changeOwner(address payable newOwner) public isOwner {
+		emit OwnerSet(owner, newOwner);
+        	owner = newOwner;
+	}
+    	
+	/**
+	* @dev Return owner address 
+	* @return address of owner
+	*/
+	function getOwner() external view returns (address) {
+		return owner;
+	}
+    
+ 	/**
+ 	 * Modifier to check if caller is owner
+ 	 */
+	modifier isOwner() {
+		// If the first argument of 'require' evaluates to 'false', execution terminates and all
+		// changes to the state and to Ether balances are reverted.
+		// This used to consume all gas in old EVM versions, but not anymore.
+		// It is often a good idea to use 'require' to check if functions are called correctly.
+		// As a second argument, you can also provide an explanation about what went wrong.
+		require(msg.sender == owner, "Caller is not owner");
+		_;
+	}
+    
+	/**
 	* @dev Set contract deployer as owner
 	*/
 	constructor() public {
@@ -76,36 +81,39 @@ contract EthTrickleVesting {
 		emit OwnerSet(address(0), owner);
 	}
 
-	//displayReleased
-	//Outputs the amount of eth avaliable for release.
+	/**
+	 * Outputs the amount of eth avaliable for release.
+	 */
 	function displayReleased() external view returns (uint256) {
 		//Caluclate releasedAmount
 		return releasedAmount;
 	}
 	
-	//displayLocked
-	//Outputs the amount of eth locked in the contract.
+	/**
+	 * Outputs the amount of eth locked in the contract.
+	 */
 	function displayLocked() external view returns (uint256) {
 		//Caluclate lockedAmount
 		return lockedAmount;
 	}
 
-	//displayTotal
-	//Outputs the total (Released+Locked) amount of eth in the contract.
+	/**
+	 * Outputs the total (Released+Locked) amount of eth in the contract.
+	 */
 	function displayTotal() external view returns (uint256) {
 		return address(this).balance;
 	}
 	
-	//claim function
-	//this function is used to claim all of the released eth which moves it from the contract to the owners address.
+	/**
+	 * This function is used to claim all of the released eth which moves it from the contract to the owners address.
+	 */
 	function claim() public isOwner {
         	//require(now >= unlockDate);
         	//Updated locked and released.
 		//Updated lastclaimed.
         	msg.sender.transfer(address(this).balance);
-    	}
+ 	}
     
-	//lock function
 	//this fucntion is payable and locks the eth until its released.
 	//double check external vs internal.
 	function lock() external payable {
@@ -120,6 +128,11 @@ contract EthTrickleVesting {
 		//Uses tricklePercentage
 		//increases releasedAmount
 		//decreases lockedAmount
+		if (totalAmount > .025 ether){
+            		releasedAmount = releasedAmount + (address(this).balance/tricklePercentage);
+		} else {
+			releasedAmount = totalAmount;
+		}
 	}
 
 	//reinvest function
@@ -128,5 +141,6 @@ contract EthTrickleVesting {
 		//Uses tricklePercentage
 		//increases lockedAmount
 		//decreased releasedAmount
+		lockedAmount = lockedAmount + (releasedAmount/tricklePercentage);
 	}
 }
