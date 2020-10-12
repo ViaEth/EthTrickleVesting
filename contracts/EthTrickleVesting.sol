@@ -9,12 +9,12 @@ contract EthTrickleVesting {
     
     //duration
 	//Every duration the contract releases a trickle percentage of the vested eth amount. In days.
-	uint256 duration = 30;
+	uint256 duration = 30 days;
 
-	//lastClaim
-	//A block time from the last time Ether was claimed.
- 	//If no ether has been claimed then this is the block time this conctract was deployed
-
+	//A unix time from the last time Ether was released.
+ 	//If no ether has been released then this is the block time this conctract was deployed.
+    uint256 lastRelasedDate = now;
+    
 	//tricklePercentage
 	//The percentage to release or reinvest
 	uint256 tricklePercentage = 10;
@@ -76,7 +76,8 @@ contract EthTrickleVesting {
 	* @dev Set contract deployer as owner
 	*/
 	constructor() public {
-		owner = msg.sender; // 'msg.sender' is sender of current call, contract deployer for a constructor
+		// 'msg.sender' is sender of current call, contract deployer for a constructor.
+		owner = msg.sender;
 		//Updates lastClaimed.
 		emit OwnerSet(address(0), owner);
 	}
@@ -108,35 +109,39 @@ contract EthTrickleVesting {
 	 * This function is used to claim all of the released eth which moves it from the contract to the owners address.
 	 */
 	function claim() public isOwner {
-        	//require(now >= unlockDate);
-        	//Updated locked and released.
+        //require(now >= unlockDate);
+        //Updated locked and released.
 		//Updated lastclaimed.
-        	msg.sender.transfer(address(this).balance);
+        msg.sender.transfer(address(this).balance);
  	}
     
-	//this fucntion is payable and locks the eth until its released.
-	//double check external vs internal.
+	/**
+	 * This fucntion is payable and locks the eth until its released.
+	 * Note: Double check external vs internal.
+	 */
 	function lock() external payable {
-        	lockedAmount = lockedAmount + msg.value;
-        	//Update Amounts
-    	}
+        lockedAmount = lockedAmount + msg.value;
+        //Update Amounts
+    }
 	
-	//release function
-	//After a specific duration a percentage of the eth vesting pool is move to the released amount
-	//If less then 1/100th of 1 eth then its all released, time based.
+	/**
+	 * After a specific duration a percentage of the eth vesting pool is move to the released amount
+	 * If less then 1/100th of 1 eth then its all released, time based.
+	 */
 	function release() internal {
 		//Uses tricklePercentage
 		//increases releasedAmount
 		//decreases lockedAmount
-		if (totalAmount > .025 ether){
+		if ((totalAmount > .025 ether) && now > (duration + lastRelasedDate)){
             		releasedAmount = releasedAmount + (address(this).balance/tricklePercentage);
 		} else {
 			releasedAmount = totalAmount;
 		}
 	}
 
-	//reinvest function
-	//After a specific duration a percentage of the released amount is moved back to the eth vesting pool, time based.
+	/**
+	 * After a specific duration a percentage of the released amount is moved back to the eth vesting pool, time based.
+	 */
 	function reinvest() internal {
 		//Uses tricklePercentage
 		//increases lockedAmount
